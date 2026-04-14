@@ -1,6 +1,4 @@
-import logging
 import os
-from typing import Generator
 
 import pytest
 from testcontainers.postgres import PostgresContainer
