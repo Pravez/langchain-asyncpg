@@ -1,0 +1,48 @@
+name: Check
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  check:
+    name: Backend Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install ruff without running check or format
+        uses: astral-sh/ruff-action@v3.6.1
+        with:
+          args: "--version"
+      - name: Ruff format check
+        run: ruff format --check .
+      - name: Ruff lint check
+        run: ruff check .
+
+  test:
+    name: Backend Test
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev --all-packages
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          uv run pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered tests/ | tee pytest-coverage.txt
+        shell: bash
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@v1
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml

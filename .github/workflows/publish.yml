@@ -1,0 +1,23 @@
+name: Publish
+on:
+  workflow_run:
+    workflows: ["Check"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/langchain-asyncpg
+    permissions:
+      id-token: write
+    steps:
+      - name: Build
+        run: uv build
+      - name: Publish to pypi
+        run: uv publish --index simple --token ${{ secrets.PYPI_API_TOKEN }}
