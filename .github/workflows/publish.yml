@@ -1,10 +1,19 @@
 name: Publish
 on:
-  push:
-    tags:
-      - v*
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      bump:
+        type: choice
+        required: true
+        description: 'Bump type'
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
 
 jobs:
   pypi-publish:
@@ -19,7 +28,18 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install uv
         uses: astral-sh/setup-uv@v7
+      - name: Version bump
+        run: uv version --bump ${{ inputs.bump }}
+      - name: Publish tag
+        run: |
+          git tag "v$(uv version --short)"
+          git push origin --tags
       - name: Build
         run: uv build
       - name: Publish to pypi
         run: uv publish --index langchain-asyncpg --token ${{ secrets.PYPI_API_TOKEN }}
+      - name: Push to github
+        run: |
+          git add pyproject.toml
+          git commit -m "chore: bump version to $(uv version --short)"
+          git push
