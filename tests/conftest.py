@@ -7,7 +7,7 @@ postgres_container = PostgresContainer("postgres:18-alpine")
 
 
 @pytest.fixture(scope="session")
-def setup_postgres(request: pytest.FixtureRequest):
+def setup_postgres(request: pytest.FixtureRequest) -> str:
     postgres_container.start()
 
     def remove_container():
@@ -15,5 +15,6 @@ def setup_postgres(request: pytest.FixtureRequest):
 
     request.addfinalizer(remove_container)
     os.environ["DATABASE_CONNECTION_STRING"] = postgres_container.get_connection_url(
-        driver="asyncpg"
+        driver=None
     )
+    return os.environ["DATABASE_CONNECTION_STRING"]
