@@ -22,4 +22,4 @@ jobs:
       - name: Build
         run: uv build
       - name: Publish to pypi
-        run: uv publish --index simple --token ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish --index langchain-asyncpg --token ${{ secrets.PYPI_API_TOKEN }}
